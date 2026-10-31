@@ -17,6 +17,7 @@ public sealed class PetEngine
     private const double PauseAfterActionSec = 2.4;
     private const double PhysicsCeiling = -78;
     private const double ClickMoveThreshold = 5;
+    private const double MinWalkDistance = 10;
 
     private readonly object _gate = new();
     private readonly Random _random;
@@ -123,6 +124,14 @@ public sealed class PetEngine
     public AppSettings Settings { get; set; } = new();
 
     public PetProfile Profile => _pet;
+
+    /// <summary>
+    /// 活动范围是否够走一步。宠物尺寸拉满（320）时 motionRangeX 会被夹到 0，
+    /// 这时走动只会原地不动，必须先跳过，否则下面 Math.Clamp 的下限会大于上限。
+    /// </summary>
+    public bool CanWalk => MaxWalkDistance >= MinWalkDistance;
+
+    private double MaxWalkDistance => Math.Max(0, _config.Display.MotionRangeX) * 1.6;
 
     public XiaowaiView? RemoteState
     {
@@ -608,7 +617,7 @@ public sealed class PetEngine
         WeightsConfig weights = _config.AnimationWeights;
         double idleW = Math.Max(0, weights.Idle);
         double turnW = _pet.FixedEnabled ? 0 : Math.Max(0, weights.Turn);
-        double moveW = _pet.FixedEnabled || !Settings.WalkingEnabled
+        double moveW = _pet.FixedEnabled || !Settings.WalkingEnabled || !CanWalk
             ? 0
             : Math.Max(0, weights.Move) * Math.Clamp(Settings.WalkChance, 0, 1);
         // 与 dsh-pet 一样：idle/turn/move 是绝对百分比，剩余概率归入动作分类。
@@ -676,7 +685,8 @@ public sealed class PetEngine
 
     private bool TryStartWalk(DateTime now)
     {
-        if (_pools.Moves.Count == 0 || _edgeSide != 0)
+        // CanWalk 为假时（活动范围被夹到 0）左右贴边也走不出去，直接不折腾。
+        if (_pools.Moves.Count == 0 || _edgeSide != 0 || !CanWalk)
         {
             return false;
         }
@@ -717,7 +727,16 @@ public sealed class PetEngine
         {
             double scale = _pet.Size / 462.0;
             distance = (p.MinDist + _random.NextDouble() * Math.Max(0, p.MaxDist - p.MinDist)) * scale;
-            distance = Math.Clamp(distance, 10, _config.Display.MotionRangeX * 1.6);
+
+            // 活动范围为 0 或极小时，Math.Clamp 的下限 10 会大于上限，直接抛
+            // ArgumentException 把显示线程带崩（表现为跑一会儿就卡死、不再推帧）。
+            double maxDistance = MaxWalkDistance;
+            if (maxDistance < MinWalkDistance)
+            {
+                return false;
+            }
+
+            distance = Math.Clamp(distance, MinWalkDistance, maxDistance);
 
             double margin = Math.Max(0, p.Margin);
             double range = Math.Max(0, _config.Display.MotionRangeX - margin);

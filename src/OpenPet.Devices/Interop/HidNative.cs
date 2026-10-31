@@ -8,6 +8,8 @@ internal static unsafe partial class HidNative
     public const uint GenericRead = 0x80000000;
     public const uint GenericWrite = 0x40000000;
     public const uint OpenExisting = 3;
+    public const uint FileShareRead = 0x1;
+    public const uint FileShareWrite = 0x2;
     public const uint FileFlagOverlapped = 0x40000000;
 
     public const uint WaitObject0 = 0;

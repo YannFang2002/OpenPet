@@ -112,12 +112,22 @@ public sealed unsafe class HidTransport : ILcdTransport
     /// <summary>How many output reports may be in flight at once.</summary>
     public int PipelineDepth { get; }
 
-    public static HidTransport Open(string interfacePath, byte reportId = 0, int pipelineDepth = 1)
+    /// <summary>
+    /// 打开屏幕的 HID 接口。
+    /// </summary>
+    /// <param name="allowSharing">
+    /// 允许与其他进程共享句柄（FILE_SHARE_READ | FILE_SHARE_WRITE）。
+    /// 有的程序（游戏加加、TRCC 之类）会同时打开这块屏幕，此时独占打开会拿到
+    /// ERROR_SHARING_VIOLATION；共享打开至少还能推帧，代价是画面可能被对方覆盖。
+    /// </param>
+    public static HidTransport Open(string interfacePath, byte reportId = 0, int pipelineDepth = 1, bool allowSharing = false)
     {
+        uint shareMode = allowSharing ? HidNative.FileShareRead | HidNative.FileShareWrite : 0u;
+
         nint handle = HidNative.CreateFile(
             interfacePath,
             HidNative.GenericRead | HidNative.GenericWrite,
-            shareMode: 0,
+            shareMode: shareMode,
             nint.Zero,
             HidNative.OpenExisting,
             HidNative.FileFlagOverlapped,

@@ -36,6 +36,7 @@ public sealed class DisplayService : IDisposable
     private readonly FramePump _pump = new(TimeSpan.FromSeconds(1.2));
     private volatile bool _connecting;
     private DateTime _nextConnectAttempt = DateTime.MinValue;
+    private int _connectFailures;
     private string _lastStatus = "";
 
     private int _renderCount;
@@ -88,13 +89,17 @@ public sealed class DisplayService : IDisposable
     {
         lock (_gate)
         {
-            if (_disposed || _thread != null)
+            // 旧线程已经退出时也要能重新拉起，否则一次异常就会让预览永久冻结。
+            if (_disposed || _thread is { IsAlive: true })
             {
                 return;
             }
 
-            _cts = new CancellationTokenSource();
-            _thread = new Thread(() => Run(_cts.Token))
+            _cts?.Dispose();
+            var cts = new CancellationTokenSource();
+            CancellationToken token = cts.Token;
+            _cts = cts;
+            _thread = new Thread(() => Run(token))
             {
                 IsBackground = true,
                 Name = "OpenPet.Display",
@@ -140,7 +145,11 @@ public sealed class DisplayService : IDisposable
         else
         {
             _nextConnectAttempt = DateTime.MinValue;
+            _connectFailures = 0;
             Report("正在查找屏幕…");
+
+            // 显示线程若已经退出，这里顺手拉起来，用户不需要重启程序。
+            Start();
         }
     }
 
@@ -148,6 +157,8 @@ public sealed class DisplayService : IDisposable
     {
         var clock = Stopwatch.StartNew();
         DateTime lastPreview = DateTime.MinValue;
+        string lastError = "";
+        DateTime lastErrorAt = DateTime.MinValue;
 
         try
         {
@@ -156,39 +167,26 @@ public sealed class DisplayService : IDisposable
                 TimeSpan frameStart = clock.Elapsed;
                 DateTime now = DateTime.Now;
 
-                _engine.Tick(now);
-                PetSnapshot snapshot = _engine.CreateSnapshot();
-
-                AdoptPendingDevice();
-                if (!_streaming)
+                try
                 {
-                    if (_device != null)
+                    RenderFrame(now, ref lastPreview);
+                }
+                catch (Exception ex)
+                {
+                    // 单帧的异常只丢这一帧。显示线程一旦退出，预览会冻住、屏幕也不再收到帧，
+                    // 而进程和 UI 还活着，用户只能重启程序（历史上的“卡死不传数据”就是这么来的）。
+                    Report($"显示帧异常：{ex.Message}");
+                    if (!string.Equals(ex.Message, lastError, StringComparison.Ordinal) ||
+                        (now - lastErrorAt).TotalSeconds >= 5)
                     {
-                        Disconnect("投屏已关闭，仅显示预览");
+                        Log?.Invoke(ex.ToString());
+                        lastError = ex.Message;
+                        lastErrorAt = now;
                     }
-                }
-                else if (_device == null && !_connecting && now >= _nextConnectAttempt)
-                {
-                    StartConnect();
-                }
 
-                int width = 320;
-                int height = 240;
-                byte[] bgra = _renderer.Render(snapshot, width, height);
-                Interlocked.Increment(ref _renderCount);
-
-                if ((now - lastPreview).TotalMilliseconds >= 90)
-                {
-                    lastPreview = now;
-                    PreviewReady?.Invoke(new PreviewFrame(bgra, width, height, now));
+                    // 稍作退避，避免同一个错误每 50 ms 刷一次日志。
+                    token.WaitHandle.WaitOne(200);
                 }
-
-                if (_device != null && _profile != null)
-                {
-                    SendFrame(snapshot, bgra);
-                }
-
-                UpdateFps(now);
 
                 int elapsedMs = (int)(clock.Elapsed - frameStart).TotalMilliseconds;
                 int wait = 50 - elapsedMs;
@@ -214,8 +212,58 @@ public sealed class DisplayService : IDisposable
                 _pendingDevice?.Dispose();
                 _pendingDevice = null;
                 _pendingProfile = null;
+
+                // 线程对象不能一直留着，否则 Start() 认为线程还活着，永远拉不起来。
+                if (ReferenceEquals(_thread, Thread.CurrentThread))
+                {
+                    _thread = null;
+                }
+            }
+
+            // 非取消、非释放的意外退出：自动补一条新线程，界面不会永久卡死。
+            if (!token.IsCancellationRequested && !_disposed)
+            {
+                Thread.Sleep(300);
+                Start();
             }
         }
+    }
+
+    private void RenderFrame(DateTime now, ref DateTime lastPreview)
+    {
+        _engine.Tick(now);
+        PetSnapshot snapshot = _engine.CreateSnapshot();
+
+        AdoptPendingDevice();
+        if (!_streaming)
+        {
+            if (_device != null)
+            {
+                Disconnect("投屏已关闭，仅显示预览");
+            }
+        }
+        else if (_device == null && !_connecting && now >= _nextConnectAttempt)
+        {
+            StartConnect();
+        }
+
+        int width = 320;
+        int height = 240;
+        byte[] bgra = _renderer.Render(snapshot, width, height);
+        Interlocked.Increment(ref _renderCount);
+
+        if ((now - lastPreview).TotalMilliseconds >= 90)
+        {
+            lastPreview = now;
+            PreviewReady?.Invoke(new PreviewFrame(bgra, width, height, now));
+        }
+
+        if (_device != null && _profile != null)
+        {
+            SendFrame(snapshot, bgra);
+        }
+
+        UpdateFps(now);
     }
 
     private void StartConnect()
@@ -226,6 +274,7 @@ public sealed class DisplayService : IDisposable
         Task.Run(() =>
         {
             ThermalrightType2? device = null;
+            int retrySeconds = 5;
             try
             {
                 var targets = DeviceEnumerator.FindHidTargets();
@@ -234,7 +283,7 @@ public sealed class DisplayService : IDisposable
                     throw new DeviceNotFoundException("未找到 0416:5302 屏幕（请检查 9Pin 线与驱动）");
                 }
 
-                var transport = HidTransport.Open(targets[0].Path, reportId: 0, pipelineDepth: 2);
+                var transport = OpenTransport(targets[0].Path);
                 device = new ThermalrightType2(transport) { SettleMs = 0 };
                 HandshakeResult handshake = device.Handshake(HandshakeMode.Auto);
                 DeviceProfile profile = DeviceCatalog.ResolveOrDefault(
@@ -253,18 +302,33 @@ public sealed class DisplayService : IDisposable
                     _pendingDevice?.Dispose();
                     _pendingDevice = device;
                     _pendingProfile = profile;
+                    _connectFailures = 0;
                     device = null;
                 }
             }
             catch (DeviceBusyException busy)
             {
-                Report("屏幕被 TRCC / OpenTRCC 占用，请关闭后再试（已退化为预览）");
-                Log?.Invoke(busy.Message);
+                // 连共享方式都拿不到（对方把自己的句柄也设为独占）时才会走到这里。
+                // 不要每 5 秒刷一遍日志：逐步退避到 1 分钟，日志里只留第一次和之后每分钟一条。
+                _connectFailures++;
+                retrySeconds = Math.Min(60, 5 * Math.Max(1, _connectFailures));
+                Report(_connectFailures == 1
+                    ? "屏幕被其他程序独占，暂时连不上（已退化为预览）"
+                    : $"屏幕仍被占用，{retrySeconds} 秒后重试（已退化为预览）");
+                if (_connectFailures == 1 || retrySeconds >= 60 && _connectFailures % 12 == 0)
+                {
+                    Log?.Invoke(busy.Message);
+                }
             }
             catch (DeviceNotFoundException missing)
             {
-                Report("未找到屏幕，已退化为预览");
-                Log?.Invoke(missing.Message);
+                _connectFailures++;
+                retrySeconds = Math.Min(60, 5 * Math.Max(1, _connectFailures));
+                Report(_connectFailures == 1 ? "未找到屏幕，已退化为预览" : $"未找到屏幕，{retrySeconds} 秒后重试");
+                if (_connectFailures == 1 || retrySeconds >= 60 && _connectFailures % 12 == 0)
+                {
+                    Log?.Invoke(missing.Message);
+                }
             }
             catch (Exception ex)
             {
@@ -275,9 +339,30 @@ public sealed class DisplayService : IDisposable
             {
                 device?.Dispose();
                 _connecting = false;
-                _nextConnectAttempt = DateTime.Now.AddSeconds(5);
+                _nextConnectAttempt = DateTime.Now.AddSeconds(retrySeconds);
             }
         });
+    }
+
+    /// <summary>
+    /// 先按独占方式打开；如果屏幕已被别的程序打开（ERROR_SHARING_VIOLATION），
+    /// 就退一步用共享方式打开——至少能继续推帧，画面可能被对方覆盖。
+    /// Windows 不提供“谁打开了这个设备接口”的查询，所以这里只能如实说明，
+    /// 不去猜持有者是谁。
+    /// </summary>
+    private HidTransport OpenTransport(string path)
+    {
+        try
+        {
+            return HidTransport.Open(path, reportId: 0, pipelineDepth: 2);
+        }
+        catch (DeviceBusyException)
+        {
+            HidTransport shared = HidTransport.Open(path, reportId: 0, pipelineDepth: 2, allowSharing: true);
+            Report("屏幕正被其他程序共享使用，已改为共享连接（画面可能被覆盖）");
+            Log?.Invoke("HID 屏幕被其他程序打开，独占打开失败，已用 FILE_SHARE_READ|WRITE 连接。");
+            return shared;
+        }
     }
 
     private void AdoptPendingDevice()

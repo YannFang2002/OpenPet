@@ -196,6 +196,19 @@ public sealed class PetRuntime : IDisposable
             }
             AddLog($"动画素材：{_library.Names.Count} 个；表情包：{_memes.Count} 张；" +
                    $"屏幕：{(_display.IsConnected ? "已连接" : "未连接")}");
+            ReportWalkRangeLimitation();
+        }
+    }
+
+    /// <summary>
+    /// 宠物尺寸太大时可用活动范围会被压到 0，此时走路分支永远无法启动。
+    /// 这本身是合法配置，但用户看不到原因（画面只是不动），所以显式提示一次。
+    /// </summary>
+    private void ReportWalkRangeLimitation()
+    {
+        if (Settings.WalkingEnabled && Engine is { CanWalk: false })
+        {
+            AddLog("活动范围太小（宠物尺寸太大时为 0），自动走动不会触发：想要走动请把尺寸调小或把活动范围调大。");
         }
     }
 
@@ -260,6 +273,7 @@ public sealed class PetRuntime : IDisposable
             }
 
             AddLog($"配置已重载：{loaded.Pet.Name}，动画 {_library.Names.Count} 个，表情包 {_memes.Count} 张");
+            ReportWalkRangeLimitation();
             Reloaded?.Invoke();
         }
     }
@@ -569,6 +583,8 @@ public sealed class PetRuntime : IDisposable
                 $"行为开关：走动={(Settings.WalkingEnabled ? "开" : "关")}，频率={Settings.WalkChance * 100:0}%，" +
                 $"贴边休息={(Settings.EdgeRestEnabled ? "开" : "关")}，休息={Settings.EdgeRestMinSeconds}~{Settings.EdgeRestMaxSeconds}s，" +
                 $"跟随睡眠={(Settings.RespectRemoteSleeping ? "开" : "关")}");
+
+            ReportWalkRangeLimitation();
             if (!string.Equals(oldTarget, Settings.DisplayTarget, StringComparison.Ordinal))
             {
                 AddLog("屏幕选择已保存：切换屏幕需要重启程序才生效");
