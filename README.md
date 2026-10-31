@@ -1,45 +1,44 @@
 # OpenPet · 屏幕宠物
 
-把 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的蓝毛小女仆，养在利民 2.8" / 320×240 USB 小屏上。
+把 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的蓝毛小女仆放到利民 2.8" / 320×240 USB 小屏上。
 **独立应用**，不依赖 DSH、不连大模型；屏幕控制参考 [OpenTRCC](https://github.com/YannFang2002/openTRCC)。
+可选接入 NAS 侧的 AstrBot 插件，把「她现在在干什么」同步到小屏和桌面窗口。
 
-![OpenPet 窗口](docs/images/window.png)
+![OpenPet 主窗口](docs/images/main-window.png)
 
-| 白天（320×240 实际画面） | 夜晚睡觉 |
+| 设置窗口（连接 / 显示 / 外观 / 行为 / 启动） | 素材库（106 动作 / 27 表情） |
 | --- | --- |
-| ![screen day](docs/images/screen-day.png) | ![screen night](docs/images/screen-night-sleep.png) |
-
-| 素材库（106 动作 / 27 表情） | 表情包贴纸投到屏幕 |
-| --- | --- |
-| ![library](docs/images/library.png) | ![meme](docs/images/window-meme.png) |
+| ![设置窗口](docs/images/settings.png) | ![素材库](docs/images/library.png) |
 
 ## 现在能做什么
 
 - **屏幕直连**：HID `0416:5302`，513 字节报告、`DA DB DC DD` 握手、RGB565 全帧、512 字节分块推流；
   沿用 OpenTRCC 的握手/设备枚举/帧组装/旋转/字节序处理，实测 **PM=53 · 240×320 行序 · LittleEndian · rot90**。
-- **真正「养」她**：饱食 / 心情 / 精力随时间衰减（关掉程序也继续算），按作息睡觉，喂食、玩耍、抚摸、点击回应、
-  拖拽抛掷、经验升级、陪伴天数、冷却时间，状态落盘。
-- **dsh-pet 同构配置**：`pets` / `animations` / `animationWeights` / `physics` / `eventsRefreshSec` / `font` / `memes`
-  都能沿用 dsh-pet 的写法；额外增加 `needs` / `care` / `schedule` / `leveling` / `lines`。
-- **全量素材**：dsh-pet 的 **106 个动作**全部接入，转成 320×180 / 12 fps 的 WebP 透明帧序列（约 73 MB）；
-  另含 **27 张表情包贴纸**（约 4.5 MB）。待机、点击、拖拽、走动、吃饭、玩耍、睡觉、碎碎念、升级、余额、工作状态、文字梗都在。
-- **素材库**：窗口里打开「素材库」（或按 `L`）可浏览 106 个动作并点播、预览 27 张表情包并「投到屏幕」；
-  碎碎念也会按概率随机配一张贴纸。
-- **窗口/托盘**：2 倍屏幕预览、状态条、经验条、日志、开机自启、关闭到托盘；屏幕不在时自动退化为纯预览并定期重连。
-- **独立运行**：不调用任何模型，不依赖 DSH；所有台词与行为都在本地配置里。
+- **远端状态**：定时读取 AstrBot 插件提供的只读状态，显示「聊天中 / 刷 B 站 / 空闲 / 睡觉」、状态详情、
+  认识天数、今日消息数；刷 B 站时可显示封面、今日进度和下次倒计时。
+- **碎碎念**：优先使用远端返回的最近原话，取不到时使用本地兜底台词；可按概率配一张表情包贴纸。
+- **动作与互动**：106 个动作、27 张表情包；支持点击回应、拖拽抛掷、自主走动、贴边休息和跟随远端睡眠。
+- **窗口/托盘**：320×240 实时预览、状态胶囊、连接状态、日志、开机自启、关闭到托盘；
+  屏幕不在时自动退化为纯预览并定期重连。
+- **设置窗口**：连接、显示、外观、行为、启动五组选项，保存后热应用。
+- **素材库**：窗口里打开「素材库」（或按 `L`）可浏览 106 个动作并点播、预览 27 张表情包并「投到屏幕」。
+- **独立运行**：不调用任何模型，不依赖 DSH；所有动画、台词与行为都在本地配置里。
+
+## 配套服务端（可选）
+
+小屏要显示「她现在在干什么」，需要 NAS 侧提供一个只读 HTTP 接口。`integrations/astrbot_plugin_screen_status/` 是 AstrBot 插件版，装到 AstrBot 的 `data/plugins/` 下即自动起服务（默认 18900），接口 `GET /api/state`。不用 AstrBot 也可以按 `integrations/` 里的 README 自己实现。
 
 ## 快速开始
 
 ### 环境
 
 - Windows 10/11 x64
-- .NET 9 SDK（本工作区可直接用 `reference\OpenTRCC\.dotnet\dotnet.exe`）
+- .NET 9 SDK
 - 利民 2.8" 320×240 USB 屏（`VID_0416&PID_5302`）；**先退出 TRCC / OpenTRCC**，它们会独占 HID
 
 ### 构建与运行
 
 ```powershell
-# 在 coding\opentrcc-dsh-pet 下
 .\scripts\build.ps1
 .\scripts\run.ps1 -NoBuild
 ```
@@ -51,56 +50,54 @@ dotnet build OpenPet.sln -c Release
 .\src\OpenPet.App\bin\Release\net9.0-windows\OpenPet.exe
 ```
 
-第一次启动会在窗口里显示预览；屏幕连接成功后，右下角状态变为「屏幕已连接」。
-关闭窗口只会隐藏到托盘，宠物仍继续在屏幕上生活；托盘菜单「退出」才会结束进程。
+第一次启动会在窗口里显示预览；屏幕连接成功后，右上角状态变为「屏幕已连接」。
+关闭窗口只会隐藏到托盘，宠物仍继续在屏幕上活动；托盘菜单「退出」才会结束进程。
+没有连接屏幕时仍可预览和改设置，程序会定期重连。
 
 ### 第一次运行
 
 - 默认读取包内 `assets/pet.jsonc`。
 - 点「打开配置」会把配置复制到 `%LocalAppData%\OpenPet\pet.jsonc` 并用默认编辑器打开；
   之后启动优先读取用户配置。改完点「重载配置」即时生效。
-- 状态保存在 `%LocalAppData%\OpenPet\pet-state.json`，日志在 `%LocalAppData%\OpenPet\app.log`。
+- 设置窗口的选项保存在 `%LocalAppData%\OpenPet\settings.json`。
+- 日志在 `%LocalAppData%\OpenPet\app.log`。
 
 ## 操作
 
 | 操作 | 方式 |
 | --- | --- |
-| 喂食 | 点「喂食」或按 `F`；饱食 +32、心情 +4、经验 +8，冷却 25 s |
-| 玩耍 | 点「玩耍」或按 `P`；心情 +18、精力 −10、经验 +12，冷却 60 s |
-| 抚摸 | 点「抚摸」或按 `T`；心情 +7、经验 +3，冷却 4 s |
-| 睡觉/叫醒 | 点「睡觉」或按 `S`；夜里 23:00–07:30 也会自己睡 |
+| 打开设置 | 右上角齿轮，或按 `Ctrl+,` |
+| 素材库 | 标题栏「素材库」，或按 `L` |
+| 重载配置 | 标题栏「重载配置」，或按 `Ctrl+R` |
+| 开/关投屏 | 标题栏「投屏中 / 投屏关」 |
 | 点击回应 | 在预览里点宠物；播放随机点击动画 |
 | 拎起来 | 在预览里按住宠物拖动，松手会按重力/弹性掉落弹跳 |
-| 动作/表情库 | 标题栏「素材库」或按 `L`；动作点播、表情包投屏 |
 | 隐藏窗口 | `Esc` 或关闭按钮（托盘可找回） |
-| 重载配置 | 标题栏「重载配置」或 `Ctrl+R` |
+| 退出 | 托盘菜单「退出」 |
 
 > 屏幕本身没有触摸，交互都在桌面窗口/托盘里完成，动作会实时同步到小屏。
 
 ## 配置
 
-配置是 JSONC（允许 `//`、`/* */` 注释和尾随逗号）。完整默认值见 [assets/pet.jsonc](assets/pet.jsonc)。
+大多数日常选项都在设置窗口里改，保存在 `%LocalAppData%\OpenPet\settings.json`。
+动画池、配色、物理等高级项仍在 JSONC 配置里；完整默认值见 [assets/pet.jsonc](assets/pet.jsonc)。
 
 ### 顶层字段
 
 | 字段 | 作用 |
 | --- | --- |
-| `activePetId` | 多只宠物时选哪一只（独立版一次只养一只） |
-| `pets[]` | 与 dsh-pet 同构：`id` / `name` / `size` / `facing` / `fixedEnabled` / `whisperEnabled` / `display` / `position` |
-| `display` | 屏幕外观：`theme`（auto/morning/day/dusk/night）、`hud`、`bubble`、`accent`、`bubbleColor`、`motionRangeX`、`floorY` |
+| `activePetId` | 多只宠物时选哪一只（独立版一次只显示一只） |
+| `pets[]` | 与 dsh-pet 同构：`id` / `name` / `size` / `facing` / `fixedEnabled` / `position` |
+| `display` | 屏幕外观：`theme`（auto/morning/day/dusk/night）、`hud`、`bubble`、`accent`、`bubbleColor`、`motionRangeX`、`floorY`、表情包相关开关 |
 | `font` | `family`（yahei=系统微软雅黑，默认且小屏更清晰 / candy=内置上首软糖体 / system）、`size`（气泡字号） |
-| `needs` | 每小时衰减/回复：`hungerDecayPerHour`、`moodDecayPerHour`、`energyDecayPerHour`、`energyRegenPerHourSleeping`、阈值 |
-| `care` | 三种互动的数值与冷却：`feed` / `play` / `pet` 的 `hunger`/`mood`/`energy`/`exp`/`cooldownSec` |
-| `schedule` | `enabled`、`sleepStart`、`sleepEnd`、`autoSleepEnergy`、`wakeEnergy` |
-| `leveling` | `baseExp`、`growth`、`maxLevel`；升级所需经验 = `baseExp × level^growth` |
+| `chatter` | 本地碎碎念：`enabled`、`minSec`、`maxSec`、`fallbackLines` |
 | `physics` | 与 dsh-pet 同名：`gravity`、`restitution`、`groundFriction`、`ceilingBounce`、`throwPower`、`petCollision` |
 | `animations` | 动画池：`idle`/`turn`/`drag`/`clicks`/`moves`/`categories`/`events` |
 | `animationWeights` | `idle`/`turn`/`move` 的绝对百分比权重；剩余概率落到随机动作分类 |
-| `eventsRefreshSec` | `whisper` = 本地碎碎念间隔（秒）；`balance` 仅为兼容 dsh-pet 保留 |
-| `memes` | 表情包名称 → 描述；名称对应 `assets/memes/<名称>.png` |
-| `display.memesEnabled` / `memeChance` / `memeDurationSec` / `memeSize` | 是否允许贴纸、碎碎念配图概率、停留秒数、屏幕边长 |
 | `mouse` | `dragEnabled`、`clickReaction` |
-| `lines` | 所有台词池：greeting/idle/feed/play/pet/sleep/wake/hungry/tired/lowMood/levelUp/tooFull/tooTired/cooldown/sleepingPet/offline |
+
+远端状态的地址、轮询间隔、超时、失败退避、封面开关和睡眠跟随都在设置窗口「连接 / 显示 / 行为」里调整，
+保存后立即生效，不需要手改配置文件。
 
 ### 动画池
 
@@ -110,17 +107,17 @@ dotnet build OpenPet.sln -c Release
 - `animations.clicks`：点击回应候选。
 - `animations.moves.default` + `actions[]`：自主走动的距离/首尾停顿；距离按 `size / 462` 缩放。
 - `animations.categories[]`：随机小动作分类，`weight` 只决定分类内分配；`noMirror: true` 的类在朝右时跳过。
-- `animations.events`：显式事件池，键为 `feed` / `play` / `pet` / `sleep` / `wake` / `levelup` / `sad` / `whisper`。
+- `animations.events`：显式事件池，当前用于 `sleep` / `wake`。
 
 动画名 = `assets/animations/<名字>/` 目录名。缺失的动画会写入日志并跳过；`idle` 全缺失会启动失败。
 
 ### 与 dsh-pet 配置的差异
 
-- `pets` 只使用 `activePetId` 指定的那一只；`display` / `position` 仅做兼容解析。
-- 不做 AI 碎碎念/对话、余额/工作状态与 DSH 的联动、系统通知、语音；余额/工作状态动作只作为普通随机动作播放。
-- `animations.events` 是「每个事件一个数组」，不是 dsh-pet 的「档位可字符串/数组」两态；本独立版不需要档位轮换。
+- 独立版只显示 `activePetId` 指定的那一只；`display` / `position` 仅做兼容解析。
+- 不移植 dsh-pet 的角色数值、AI 对话、语音和系统通知。
+- 远端状态来自 AstrBot 的只读接口；没有服务端时仍可播放本地动画和碎碎念。
+- `animations.events` 是「每个事件一个数组」，不是 dsh-pet 的「档位可字符串/数组」两态。
 - `font.followPet` 暂未使用（气泡字号固定按 `font.size`）。
-- `whisperEnabled` 对应本地碎碎念：不调用模型，只按 `eventsRefreshSec.whisper` 抽一句 `lines.idle` 并播 `events.whisper`。
 
 ### 动画素材
 
@@ -144,7 +141,9 @@ OpenPet.sln
 src/
   OpenPet.Core/        RGB565、帧头/分块、BGRA、旋转、FramePump（改编自 OpenTRCC）
   OpenPet.Devices/     HID 传输、握手、设备枚举/profile、Thermalright Type-2（改编自 OpenTRCC）
-  OpenPet.App/         WPF 窗口、宠物引擎、Skia 渲染、推流、托盘、存档
+  OpenPet.App/         WPF 窗口、宠物引擎、Skia 渲染、推流、托盘、设置
+integrations/
+  astrbot_plugin_screen_status/  AstrBot 只读状态插件
 assets/
   pet.jsonc            默认配置
   animations/          106 个 WebP 帧序列（生成物）
@@ -171,25 +170,23 @@ scripts/               构建/运行/发布脚本
 # 渲染一张 320×240 截图（不需要屏幕）
 OpenPet.exe --snapshot out.png --at 4
 
-# 夜间 + 睡觉状态
-OpenPet.exe --snapshot night.png --at 2 --sleep --config my-night.jsonc
-
 # 连屏幕推流 10 秒，结果写 %LocalAppData%\OpenPet\headless.log
 OpenPet.exe --screen-test 10
 
-# 48 小时加速模拟（作息/衰减/互动/升级）
-OpenPet.exe --simulate 48
+# 直接打开设置窗口
+OpenPet.exe --settings
 ```
 
-`--screen-test` 成功时会记录 `已连接屏幕 · PM=...`；失败会写 `屏幕被 TRCC 占用` 或 `未找到屏幕`。
+`--snapshot` 会尽量沿用远端状态，这样名字和状态胶囊与真机一致；拉不到服务端时退回本地画面。
+`--screen-test` 成功时会记录「已连接屏幕 · PM=...」；失败会写「屏幕被 TRCC 占用」或「未找到屏幕」。
 
 ## 已知限制
 
 - 屏幕为 320×240、RGB565；其它分辨率/JPEG 面板未适配。
 - 推流约 16–20 fps，动画素材 12 fps；静态待机也靠 1.2 s 保活。
 - 不支持触摸；只能从桌面窗口/托盘操作。
-- 多宠物配置只养 `activePetId` 一只。
-- dsh-pet 的 AI 对话/语音/系统通知未移植（独立版故意不连 DSH）。
+- 多宠物配置只显示 `activePetId` 一只。
+- 不包含 dsh-pet 的角色数值系统，也不移植 AI 对话、语音和系统通知。
 - TRCC / OpenTRCC 会独占设备，必须先退出；OpenTRCC 以管理员运行时，需要从它的托盘菜单退出。
 - 自启写 `HKCU\...\Run`，路径指向当前 exe；移动目录后需重新勾选。
 
