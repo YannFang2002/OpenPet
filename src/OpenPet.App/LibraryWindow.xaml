@@ -1,0 +1,191 @@
+<Window x:Class="OpenPet.App.LibraryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OpenPet · 素材库"
+        Width="780" Height="620"
+        MinWidth="680" MinHeight="520"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource WindowBg}"
+        FontFamily="Microsoft YaHei UI">
+
+    <Window.Resources>
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+            <Setter Property="Padding" Value="16,7" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="bd" Background="Transparent"
+                                BorderBrush="Transparent" BorderThickness="0,0,0,2"
+                                Padding="{TemplateBinding Padding}" Margin="0,0,6,0">
+                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Accent}" />
+                                <Setter Property="Foreground" Value="{StaticResource TextMain}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource TextMain}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" IsItemsHost="True" Background="Transparent" />
+                            <Border Grid.Row="1" Margin="0,9,0,0"
+                                    Background="{StaticResource PanelBg}"
+                                    BorderBrush="{StaticResource PanelBorder}"
+                                    BorderThickness="1" CornerRadius="14" Padding="14">
+                                <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent" />
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="#0E141E" />
+            <Setter Property="Foreground" Value="{StaticResource TextMain}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PanelBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        </Style>
+
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource TextMain}" />
+            <Setter Property="Padding" Value="9,6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="bd" Background="Transparent" CornerRadius="6"
+                                Padding="{TemplateBinding Padding}" Margin="0,1">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource AccentSoft}" />
+                                <Setter Property="Foreground" Value="{StaticResource Accent}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#182233" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,14">
+            <StackPanel>
+                <TextBlock Text="素材库" FontSize="21" FontWeight="Bold" Foreground="{StaticResource TextMain}" />
+                <TextBlock x:Name="CountsText" Text="全部动作 · 表情包" FontSize="11"
+                           Foreground="{StaticResource TextMuted}" Margin="0,3,0,0" />
+            </StackPanel>
+            <Button Content="关闭" Style="{StaticResource GhostButton}"
+                    HorizontalAlignment="Right" VerticalAlignment="Center" Click="Close_Click" />
+        </Grid>
+
+        <TabControl Grid.Row="1">
+            <TabItem x:Name="ActionTab" Header="动作">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="310" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <ListBox x:Name="ActionList" Grid.Column="0"
+                             SelectionChanged="ActionList_SelectionChanged"
+                             MouseDoubleClick="ActionList_MouseDoubleClick" />
+
+                    <Border Grid.Column="2" Background="#111823" BorderBrush="{StaticResource PanelBorder}"
+                            BorderThickness="1" CornerRadius="12" Padding="18">
+                        <StackPanel>
+                            <TextBlock Text="动作点播" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextMuted}" />
+                            <TextBlock x:Name="ActionNameText" Text="从左侧选一个动作"
+                                       FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextMain}"
+                                       TextWrapping="Wrap" Margin="0,10,0,0" />
+                            <TextBlock Text="点击「播放」会立刻在窗口预览和小屏上播放一次；不影响远端状态。"
+                                       FontSize="11" Foreground="{StaticResource TextMuted}"
+                                       TextWrapping="Wrap" Margin="0,10,0,0" LineHeight="18" />
+                            <Button x:Name="PlayActionButton" Content="播放到屏幕"
+                                    Style="{StaticResource ActionButton}" Margin="0,22,0,0"
+                                    Click="PlayAction_Click" />
+                            <Button Content="随机播放一个"
+                                    Style="{StaticResource GhostButton}" Margin="0,8,0,0"
+                                    Click="RandomAction_Click" />
+                            <TextBlock x:Name="ActionStatusText" Text=""
+                                       FontSize="11" Foreground="{StaticResource Accent}"
+                                       TextWrapping="Wrap" Margin="0,14,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem x:Name="MemeTab" Header="表情包">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="230" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <ListBox x:Name="MemeList" Grid.Column="0"
+                             SelectionChanged="MemeList_SelectionChanged" />
+
+                    <Border Grid.Column="2" Background="#111823" BorderBrush="{StaticResource PanelBorder}"
+                            BorderThickness="1" CornerRadius="12" Padding="18">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Border Background="#0A0F18" CornerRadius="10" Padding="8">
+                                <Image x:Name="MemePreview" Stretch="Uniform" />
+                            </Border>
+                            <StackPanel Grid.Row="1" Margin="0,12,0,0">
+                                <TextBlock x:Name="MemeNameText" Text="从左侧选一张表情包"
+                                           FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextMain}" />
+                                <Button x:Name="PlayMemeButton" Content="投到屏幕 4 秒"
+                                        Style="{StaticResource ActionButton}" Margin="0,12,0,0"
+                                        Click="PlayMeme_Click" />
+                                <TextBlock x:Name="MemeStatusText" Text=""
+                                           FontSize="11" Foreground="{StaticResource Accent}"
+                                           TextWrapping="Wrap" Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <TextBlock Grid.Row="2" Margin="2,10,2,0" FontSize="10" Foreground="{StaticResource TextMuted}"
+                   Text="动作会抢占当前动画；表情包贴纸会出现在小屏右侧，约 4 秒后消失。" />
+    </Grid>
+</Window>

@@ -1,0 +1,14 @@
+bin/
+obj/
+artifacts/
+.vs/
+*.user
+*.suo
+tmp/
+TestResults/
+logs/
+*.log
+*.log.*
+settings.json
+*.bak_*
+

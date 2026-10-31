@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>OpenPet.Devices</RootNamespace>
+    <AssemblyName>OpenPet.Devices</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenPet.Core\OpenPet.Core.csproj" />
+  </ItemGroup>
+</Project>

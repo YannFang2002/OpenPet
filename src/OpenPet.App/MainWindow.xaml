@@ -1,0 +1,152 @@
+<Window x:Class="OpenPet.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OpenPet · 屏幕宠物"
+        Width="1060" Height="650"
+        MinWidth="940" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource WindowBg}"
+        FontFamily="Microsoft YaHei UI"
+        KeyDown="Window_KeyDown"
+        Closing="Window_Closing"
+        Loaded="Window_Loaded">
+
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ================= header ================= -->
+        <Grid Grid.Row="0" Margin="0,0,0,14">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Width="38" Height="38" CornerRadius="11" Background="#1B2A42" BorderBrush="#33507A" BorderThickness="1">
+                    <TextBlock Text="✦" FontSize="18" Foreground="{StaticResource Accent}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Margin="11,0,0,0">
+                    <TextBlock Text="OpenPet" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextMain}" />
+                    <TextBlock x:Name="SubtitleText" Text=""
+                               FontSize="11" Foreground="{StaticResource TextMuted}" Margin="0,1,0,0" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-10,0">
+                <Border Background="#121A27" BorderBrush="#263247" BorderThickness="1"
+                        CornerRadius="14" Padding="12,6" Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse x:Name="StatusDot" Width="7" Height="7" Fill="{StaticResource Warn}"
+                                 VerticalAlignment="Center" Margin="0,0,7,0" />
+                        <TextBlock x:Name="DeviceStatusText" Text="正在连接屏幕…" FontSize="12"
+                                   Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <ToggleButton x:Name="StreamToggle" Style="{StaticResource PillToggle}"
+                              Content="投屏中" IsChecked="True" Margin="0,0,8,0"
+                              Checked="StreamToggle_Changed" Unchecked="StreamToggle_Changed" />
+                <Button x:Name="LibraryButton" Style="{StaticResource GhostButton}" Content="素材库"
+                        Margin="0,0,8,0" Click="OpenLibrary_Click" />
+                <Button x:Name="ReloadButton" Style="{StaticResource GhostButton}" Content="重载配置"
+                        Margin="0,0,8,0" Click="Reload_Click" />
+                <Button x:Name="ExitButton" Style="{StaticResource GhostButton}" Content="退出"
+                        Click="Exit_Click" />
+                <Button x:Name="SettingsGearButton" Style="{StaticResource GhostButton}" Content="⚙"
+                        Width="32" Height="32" Padding="0" FontSize="16" Margin="8,0,0,0"
+                        Focusable="False" IsTabStop="False" ToolTip="设置 (Ctrl+,)"
+                        AutomationProperties.AutomationId="SettingsGearButton"
+                        Click="SettingsGear_Click" />
+            </StackPanel>
+        </Grid>
+
+        <!-- ================= body ================= -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="660" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- preview -->
+            <Border Grid.Column="0" Background="#080B11" BorderBrush="{StaticResource PanelBorder}"
+                    BorderThickness="1" CornerRadius="16" ClipToBounds="True">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="15,11,15,9">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="{StaticResource Accent}" VerticalAlignment="Center" Margin="0,0,7,0" />
+                            <TextBlock Text="屏幕预览 · 320 × 240" FontSize="10" Foreground="#C9D6EA" />
+                        </StackPanel>
+                        <TextBlock Text="LIVE" FontSize="9" Foreground="{StaticResource Accent}"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Grid Grid.Row="1" Background="#060910">
+                        <Image x:Name="PreviewImage"
+                               Stretch="Uniform"
+                               RenderOptions.BitmapScalingMode="HighQuality"
+                               MouseLeftButtonDown="Preview_MouseLeftButtonDown"
+                               MouseMove="Preview_MouseMove"
+                               MouseLeftButtonUp="Preview_MouseLeftButtonUp"
+                               />
+                    </Grid>
+
+                    <TextBlock Grid.Row="2" Margin="15,9,15,11"
+                               Text="点击宠物会回应 · 按住拖动可以把它拎起来，松手会掉下去弹一弹"
+                               FontSize="10" Foreground="#7F90A8" />
+                </Grid>
+            </Border>
+
+            <!-- side panel -->
+            <ScrollViewer x:Name="SideScroll" Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="0,0,4,0">
+
+                    <!-- pet card -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock x:Name="NameText" Text="" FontSize="19" FontWeight="Bold"
+                                       Foreground="{StaticResource TextMain}" />
+                            <TextBlock x:Name="StatusText" Text="等待状态…" FontSize="12"
+                                       Foreground="{StaticResource Accent}" Margin="0,3,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- settings / log -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="设置与日志" Style="{StaticResource SectionTitle}" />
+                            <Grid>
+                                <CheckBox x:Name="AutostartCheck" Content="开机自启" FontSize="12"
+                                          Foreground="{StaticResource TextMain}" VerticalAlignment="Center"
+                                          Checked="Autostart_Changed" Unchecked="Autostart_Changed" />
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button x:Name="OpenConfigButton" Style="{StaticResource GhostButton}" Content="打开配置"
+                                            Click="OpenConfig_Click" Margin="0,0,6,0" />
+                                    <Button x:Name="OpenDataButton" Style="{StaticResource GhostButton}" Content="打开数据目录"
+                                            Click="OpenData_Click" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock x:Name="ConfigPathText" Text="" FontSize="10"
+                                       Foreground="{StaticResource TextMuted}" TextTrimming="CharacterEllipsis"
+                                       Margin="0,9,0,8" ToolTipService.ShowDuration="30000" />
+                            <ListBox x:Name="LogList" Style="{StaticResource LogList}" Height="118" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ================= footer ================= -->
+        <Grid Grid.Row="2" Margin="2,10,2,0">
+            <TextBlock x:Name="MessageText" Text="准备就绪。"
+                       FontSize="11" Foreground="{StaticResource TextMuted}" />
+            <TextBlock x:Name="PerfText" Text="渲染 — fps · 推送 — fps"
+                       FontSize="11" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Right" />
+        </Grid>
+    </Grid>
+</Window>

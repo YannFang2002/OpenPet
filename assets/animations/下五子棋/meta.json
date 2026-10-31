@@ -1,0 +1,9 @@
+{
+  "name": "下五子棋",
+  "fps": 12,
+  "frameWidth": 320,
+  "frameHeight": 180,
+  "frameCount": 120,
+  "source": "reference/dsh-pet/dsh-pet/assets/webm/下五子棋.webm",
+  "generatedAt": "2026-10-30T15:43:56+0800"
+}

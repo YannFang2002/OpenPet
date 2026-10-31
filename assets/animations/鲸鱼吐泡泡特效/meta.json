@@ -1,0 +1,9 @@
+{
+  "name": "鲸鱼吐泡泡特效",
+  "fps": 12,
+  "frameWidth": 320,
+  "frameHeight": 180,
+  "frameCount": 120,
+  "source": "reference/dsh-pet/dsh-pet/assets/webm/鲸鱼吐泡泡特效.webm",
+  "generatedAt": "2026-10-30T15:43:54+0800"
+}

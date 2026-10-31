@@ -1,0 +1,9 @@
+{
+  "name": "被鼠标拖拽悬空反馈",
+  "fps": 12,
+  "frameWidth": 320,
+  "frameHeight": 180,
+  "frameCount": 120,
+  "source": "reference/dsh-pet/dsh-pet/assets/webm/被鼠标拖拽悬空反馈.webm",
+  "generatedAt": "2026-10-30T15:43:44+0800"
+}

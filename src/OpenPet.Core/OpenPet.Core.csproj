@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>OpenPet.Core</RootNamespace>
+    <AssemblyName>OpenPet.Core</AssemblyName>
+  </PropertyGroup>
+</Project>

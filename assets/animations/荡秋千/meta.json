@@ -1,0 +1,9 @@
+{
+  "name": "荡秋千",
+  "fps": 12,
+  "frameWidth": 320,
+  "frameHeight": 180,
+  "frameCount": 120,
+  "source": "reference/dsh-pet/dsh-pet/assets/webm/荡秋千.webm",
+  "generatedAt": "2026-10-30T15:43:49+0800"
+}

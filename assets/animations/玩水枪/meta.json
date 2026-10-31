@@ -1,0 +1,9 @@
+{
+  "name": "玩水枪",
+  "fps": 12,
+  "frameWidth": 320,
+  "frameHeight": 180,
+  "frameCount": 120,
+  "source": "reference/dsh-pet/dsh-pet/assets/webm/玩水枪.webm",
+  "generatedAt": "2026-10-30T15:43:47+0800"
+}

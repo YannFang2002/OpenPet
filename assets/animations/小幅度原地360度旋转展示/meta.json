@@ -1,0 +1,9 @@
+{
+  "name": "小幅度原地360度旋转展示",
+  "fps": 12,
+  "frameWidth": 320,
+  "frameHeight": 180,
+  "frameCount": 120,
+  "source": "reference/dsh-pet/dsh-pet/assets/webm/小幅度原地360度旋转展示.webm",
+  "generatedAt": "2026-10-30T16:58:22+0800"
+}

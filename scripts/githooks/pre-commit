@@ -1,0 +1,8 @@
+#!/bin/sh
+# pre-commit：扫描暂存区里的本机路径 / 内网 IP / 密钥 / 私人邮箱。
+# 安装位置由 core.hooksPath 指向本目录；确认无误可用 git commit --no-verify 绕过。
+if command -v powershell.exe >/dev/null 2>&1; then
+    exec powershell.exe -NoProfile -ExecutionPolicy Bypass -File "scripts/pre-commit-sensitive-scan.ps1"
+fi
+
+exec pwsh -NoProfile -ExecutionPolicy Bypass -File "scripts/pre-commit-sensitive-scan.ps1"

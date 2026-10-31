@@ -1,0 +1,155 @@
+// ============================================================================
+// OpenPet v2 · OpenPet 副屏配置（JSONC：允许 // 与 /* */ 注释，允许尾随逗号）
+// ============================================================================
+{
+  "schemaVersion": 2,
+  "activePetId": "main",
+
+  "pets": [
+    {
+      "id": "main",
+      "name": "蓝毛小女仆",
+      "size": 170,
+      "facing": "left",
+      "fixedEnabled": false,
+      "position": { "corner": "bottom-center", "marginX": 0, "marginY": 0 }
+    }
+  ],
+
+  "display": {
+    "theme": "auto",
+    "hud": true,
+    "bubble": true,
+    "accent": "#8FBCFF",
+    "bubbleColor": "#FFF8EC",
+    "motionRangeX": 75,
+    "floorY": 204,
+    "memesEnabled": true,
+    "memeChance": 0.35,
+    "memeDurationSec": 4.0,
+    "memeSize": 104
+  },
+
+  "font": { "family": "candy", "size": 12, "followPet": false },
+
+  // 碎碎念：优先用 NAS 给的「她最近真说过的话」，取不到才用这里的兜底台词
+  "chatter": {
+    "enabled": true,
+    "minSec": 240,
+    "maxSec": 600,
+    "fallbackLines": ["……", "哼。", "哥，你在忙吗"]
+  },
+
+  "physics": {
+    "gravity": 1400,
+    "restitution": 0.78,
+    "groundFriction": 2.5,
+    "ceilingBounce": true,
+    "throwPower": 1.0,
+    "petCollision": false
+  },
+
+  "xiaowai": {
+    "enabled": true,
+    "url": "http://127.0.0.1:18900",
+    "pollSec": 5,
+    "timeoutSec": 3,
+    "backoffSec": 15,
+    "showCover": true,
+    "bubbleOnChange": true,
+    "sleepFromRemote": true,
+    "actions": {
+      "chatting": ["写代码", "轻快记录"],
+      "browsing_bili": ["照镜子", "摇扇纳凉"],
+      "idle": []
+    }
+  },
+
+  // 动画素材：assets/animations/<动画名>/
+  "animations": {
+    "idle": ["待机呼吸休闲"],
+    "turn": ["东张西望"],
+    "drag": ["被鼠标拖拽悬空反馈"],
+    "clicks": [
+      "点击回应-开心跃动",
+      "点击回应-害羞惊讶",
+      "点击回应-傲娇生气",
+      "点击回应-挠痒咯咯笑",
+      "点击回应-元气挥手"
+    ],
+    "moves": {
+      "default": { "minDist": 40, "maxDist": 130, "margin": 6, "leadSec": 2, "tailSec": 2 },
+      "actions": [
+        { "name": "螃蟹走路" },
+        { "name": "原地漂浮踏步", "params": { "minDist": 40, "maxDist": 120 } },
+        { "name": "原地左转奔跑", "params": { "minDist": 120, "maxDist": 320, "leadSec": 1.75, "tailSec": 4.8 } }
+      ],
+      "edge": {
+        "enabled": true,
+        "chance": 0.45,
+        "restMinSec": 60,
+        "restMaxSec": 180,
+        "tolerancePx": 4,
+        "margin": 6,
+        "actions": ["原地小憩沉眠", "打瞌睡被惊醒", "原地蹲下玩玩具汽车"]
+      }
+    },
+    "categories": [
+      {
+        "id": "小动作", "weight": 20, "actions": [
+          "悠闲哼歌", "原地敲击桌面互动", "哈欠连天", "照镜子", "写代码",
+          "摇扇纳凉", "晨间刷牙", "轻快记录", "被吓一跳", "女仆屈膝礼仪",
+          "原地小憩沉眠", "超大伸懒腰",
+          "小幅度原地360度旋转展示", "原地重力下蹲压缩", "整体换装试色",
+          "用鲸鱼尾巴拍打地面", "偷吃零食被抓住", "玩游戏气急败坏"
+        ]
+      },
+      {
+        "id": "玩耍", "weight": 20, "actions": [
+          "原地专心玩魔方", "原地蹲下玩玩具汽车", "鲸鱼吐泡泡特效", "蓝鲸现世",
+          "小提琴演奏", "放风筝", "扑克魔术", "抽陀螺", "撸猫", "三球抛接",
+          "变鸽子", "下五子棋",
+          "拆礼物", "动物环绕", "蝴蝶蜜蜂环绕头顶开花", "凭空生花",
+          "骑木马", "吹笛子", "优雅女仆舞", "原地跳跃抓碎头顶物品"
+        ]
+      },
+      {
+        "id": "吃什么", "weight": 16, "actions": [
+          "吃白饭", "大口吃零食", "吃早餐", "吃午餐", "吃晚餐",
+          "吃冰淇淋融化", "吃糖葫芦", "吃西瓜", "涮火锅",
+          "吃Token", "吃大闸蟹", "吃饺子", "吃腊八粥",
+          "吃青团", "吃汤圆", "吃长寿面", "吃重阳糕"
+        ]
+      },
+      {
+        "id": "时节", "weight": 14, "actions": [
+          "被落叶淹没", "堆雪人", "放烟花", "吃粽子", "吃年糕",
+          "收红包", "写福字", "装点圣诞树", "萌化小幽灵",
+          "插茱萸赏菊", "穿针乞巧", "放河灯", "放孔明灯",
+          "讨糖南瓜灯", "舞狮头", "中秋赏月吃月饼"
+        ]
+      },
+      {
+        "id": "文字", "weight": 6, "noMirror": true, "actions": [
+          "是啊，吃什么", "深度思考碎碎念"
+        ]
+      },
+      {
+        "id": "余额", "weight": 5, "noMirror": true, "actions": [
+          "余额-钱袋满溢", "余额-金袋叮当", "余额-钱袋如常",
+          "余额-数金皱眉", "余额-袋空如洗", "余额-分文不剩"
+        ]
+      },
+      {
+        "id": "工作", "weight": 5, "actions": [
+          "工作状态-思考冒泡", "工作状态-忙碌点按",
+          "工作状态-清点归档", "工作状态-原地踱步张望"
+        ]
+      }
+    ],
+    "events": {
+      "sleep": ["原地小憩沉眠"],
+      "wake": ["超大伸懒腰", "打瞌睡被惊醒"]
+    }
+  }
+}

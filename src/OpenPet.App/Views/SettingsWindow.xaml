@@ -1,0 +1,284 @@
+<Window x:Class="OpenPet.App.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OpenPet 设置"
+        Width="520" Height="640"
+        WindowStartupLocation="CenterScreen"
+        Background="#101722"
+        FontFamily="Microsoft YaHei UI"
+        Foreground="#E6EDF7">
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#E6EDF7" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#0B111B" />
+            <Setter Property="Foreground" Value="#E6EDF7" />
+            <Setter Property="BorderBrush" Value="#2A3A52" />
+            <Setter Property="Padding" Value="5,3" />
+            <Setter Property="Margin" Value="0,2" />
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#E6EDF7" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,3" />
+        </Style>
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="#9FC4FF" />
+            <Setter Property="BorderBrush" Value="#2A3A52" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#C7D3E4" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+        </Style>
+        <Style x:Key="ErrorText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FF6B6B" />
+            <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+            <Setter Property="Visibility" Value="Collapsed" />
+        </Style>
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#1B2A42" />
+            <Setter Property="Foreground" Value="#E6EDF7" />
+            <Setter Property="BorderBrush" Value="#33507A" />
+            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="Margin" Value="6,0,0,0" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+
+                <GroupBox Header="连接">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="NAS 地址" Style="{StaticResource FieldLabel}" />
+                            <TextBox x:Name="StateUrlBox" Grid.Column="1"
+                                     TextChanged="StateUrl_TextChanged"
+                                     AutomationProperties.AutomationId="StateUrlBox" />
+                            <Button x:Name="TestButton" Grid.Column="2" Content="测试连接"
+                                    Style="{StaticResource ButtonStyle}"
+                                    AutomationProperties.AutomationId="TestButton"
+                                    Click="Test_Click" />
+                        </Grid>
+                        <TextBlock x:Name="StateUrlSummary" FontSize="10.5" Foreground="#7F90A8"
+                                   Margin="92,2,0,0" TextTrimming="CharacterEllipsis"
+                                   AutomationProperties.AutomationId="StateUrlSummary" />
+                        <TextBlock x:Name="SettingsPathText" FontSize="10.5" Foreground="#7F90A8"
+                                   Margin="92,2,0,0" TextTrimming="CharacterEllipsis"
+                                   AutomationProperties.AutomationId="SettingsPathText" />
+                        <TextBlock x:Name="UrlError" Style="{StaticResource ErrorText}" />
+                        <TextBlock x:Name="TestResultText" Text="" FontSize="11.5" Margin="92,2,0,4"
+                                   AutomationProperties.AutomationId="TestResultText" />
+                        <Grid Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="80" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="刷新间隔" Style="{StaticResource FieldLabel}" />
+                            <TextBox x:Name="PollBox" Grid.Column="1"
+                                     AutomationProperties.AutomationId="PollBox" />
+                            <TextBlock Grid.Column="2" Text="秒" VerticalAlignment="Center" />
+                            <TextBox x:Name="TimeoutBox" Grid.Column="3"
+                                     AutomationProperties.AutomationId="TimeoutBox" />
+                            <TextBlock Grid.Column="4" Text="秒" VerticalAlignment="Center" />
+                            <TextBox x:Name="BackoffBox" Grid.Column="5"
+                                     AutomationProperties.AutomationId="BackoffBox" />
+                        </Grid>
+                        <TextBlock Text="刷新间隔 / 超时 / 失败退避（秒）" FontSize="10.5" Foreground="#7F90A8" Margin="92,2,0,0" />
+                        <TextBlock x:Name="NumberError" Style="{StaticResource ErrorText}" />
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="显示">
+                    <StackPanel>
+                        <CheckBox x:Name="UseRemoteNameCheck" Content="使用 NAS 名字"
+                                  AutomationProperties.AutomationId="UseRemoteNameCheck"
+                                  Checked="UseRemoteName_Changed" Unchecked="UseRemoteName_Changed" />
+                        <Grid Margin="0,2,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="名字覆盖" Style="{StaticResource FieldLabel}" />
+                            <TextBox x:Name="NameOverrideBox" Grid.Column="1"
+                                     AutomationProperties.AutomationId="NameOverrideBox" />
+                        </Grid>
+                        <UniformGrid Columns="2">
+                            <CheckBox x:Name="ShowStatusCapsuleCheck" Content="状态胶囊"
+                                      AutomationProperties.AutomationId="ShowStatusCapsuleCheck" />
+                            <CheckBox x:Name="ShowCoverCheck" Content="封面"
+                                      AutomationProperties.AutomationId="ShowCoverCheck" />
+                            <CheckBox x:Name="ShowBiliProgressCheck" Content="今日刷B站进度"
+                                      AutomationProperties.AutomationId="ShowBiliProgressCheck" />
+                            <CheckBox x:Name="ShowNextProactiveCheck" Content="下次搭话倒计时"
+                                      AutomationProperties.AutomationId="ShowNextProactiveCheck" />
+                            <CheckBox x:Name="ShowChatterCheck" Content="碎碎念"
+                                      AutomationProperties.AutomationId="ShowChatterCheck" />
+                            <CheckBox x:Name="ShowDaysTogetherCheck" Content="第几天"
+                                      AutomationProperties.AutomationId="ShowDaysTogetherCheck" />
+                            <CheckBox x:Name="ShowIdleDetailCheck" Content="空闲详情"
+                                      AutomationProperties.AutomationId="ShowIdleDetailCheck" />
+                            <CheckBox x:Name="TopmostCheck" Content="置顶窗口"
+                                      AutomationProperties.AutomationId="TopmostCheck" />
+                        </UniformGrid>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="外观">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="150" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="宠物大小" Style="{StaticResource FieldLabel}" />
+                            <Slider x:Name="PetSizeSlider" Grid.Column="1" Minimum="100" Maximum="320"
+                                    TickFrequency="5" IsSnapToTickEnabled="True"
+                                    AutomationProperties.AutomationId="PetSizeSlider"
+                                    ValueChanged="PetSize_Changed" />
+                            <TextBlock x:Name="PetSizeText" Grid.Column="2" Text="170 px · 占 53%"
+                                       VerticalAlignment="Center" TextAlignment="Right"
+                                       AutomationProperties.AutomationId="PetSizeText" />
+                        </Grid>
+                        <TextBlock Text="调大会走不动：活动范围上限 = (320-大小)/2"
+                                   FontSize="10.5" Foreground="#7F90A8" Margin="92,2,0,4" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="150" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="水平活动范围" Style="{StaticResource FieldLabel}" />
+                            <Slider x:Name="MotionRangeSlider" Grid.Column="1" Minimum="0" Maximum="75"
+                                    TickFrequency="1" IsSnapToTickEnabled="True"
+                                    AutomationProperties.AutomationId="MotionRangeSlider"
+                                    ValueChanged="MotionRange_Changed" />
+                            <TextBlock x:Name="MotionRangeText" Grid.Column="2" Text="±75 px"
+                                       VerticalAlignment="Center" TextAlignment="Right"
+                                       AutomationProperties.AutomationId="MotionRangeText" />
+                        </Grid>
+                        <TextBlock x:Name="RangeClampHint" Text="已自动收窄" FontSize="10.5"
+                                   Foreground="#FF9F43" Margin="92,1,0,4" Visibility="Collapsed"
+                                   AutomationProperties.AutomationId="RangeClampHint" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="150" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="走路速度" Style="{StaticResource FieldLabel}" />
+                            <Slider x:Name="WalkSpeedSlider" Grid.Column="1" Minimum="50" Maximum="200"
+                                    TickFrequency="5" IsSnapToTickEnabled="True"
+                                    AutomationProperties.AutomationId="WalkSpeedSlider"
+                                    ValueChanged="WalkSpeed_Changed" />
+                            <TextBlock x:Name="WalkSpeedText" Grid.Column="2" Text="1.0×"
+                                       VerticalAlignment="Center" TextAlignment="Right"
+                                       AutomationProperties.AutomationId="WalkSpeedText" />
+                        </Grid>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="行为">
+                    <StackPanel>
+                        <CheckBox x:Name="WalkingCheck" Content="允许走动"
+                                  AutomationProperties.AutomationId="WalkingCheck" />
+                        <Grid Margin="0,2,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="46" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="走动频率" Style="{StaticResource FieldLabel}" />
+                            <Slider x:Name="WalkChanceSlider" Grid.Column="1" Minimum="0" Maximum="100"
+                                    TickFrequency="5" IsSnapToTickEnabled="True"
+                                    AutomationProperties.AutomationId="WalkChanceSlider"
+                                    ValueChanged="WalkChance_Changed" />
+                            <TextBlock x:Name="WalkChanceText" Grid.Column="2" Text="100%" VerticalAlignment="Center" />
+                        </Grid>
+                        <CheckBox x:Name="EdgeRestCheck" Content="允许贴边休息"
+                                  AutomationProperties.AutomationId="EdgeRestCheck" />
+                        <Grid Margin="0,2,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="36" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="36" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="休息时长" Style="{StaticResource FieldLabel}" />
+                            <TextBox x:Name="EdgeMinBox" Grid.Column="1"
+                                     AutomationProperties.AutomationId="EdgeMinBox" />
+                            <TextBlock Grid.Column="2" Text="~ 秒" VerticalAlignment="Center" />
+                            <TextBox x:Name="EdgeMaxBox" Grid.Column="3"
+                                     AutomationProperties.AutomationId="EdgeMaxBox" />
+                            <TextBlock Grid.Column="4" Text="秒" VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock x:Name="EdgeError" Style="{StaticResource ErrorText}" />
+                        <CheckBox x:Name="RespectSleepCheck" Content="跟随远端睡觉状态"
+                                  AutomationProperties.AutomationId="RespectSleepCheck" />
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="启动">
+                    <StackPanel>
+                        <CheckBox x:Name="AutoStartCheck" Content="开机自启"
+                                  AutomationProperties.AutomationId="AutoStartCheck" />
+                        <Grid Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="屏幕选择" Style="{StaticResource FieldLabel}" />
+                            <ComboBox x:Name="DisplayCombo" Grid.Column="1"
+                                      AutomationProperties.AutomationId="DisplayCombo" />
+                        </Grid>
+                        <TextBlock Text="切换屏幕需要重启程序才生效。" FontSize="10.5" Foreground="#7F90A8" Margin="92,3,0,0" />
+                    </StackPanel>
+                </GroupBox>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Row="1" Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button x:Name="DefaultsButton" Content="恢复默认" HorizontalAlignment="Left"
+                    Style="{StaticResource ButtonStyle}" Margin="0"
+                    AutomationProperties.AutomationId="DefaultsButton"
+                    Click="Defaults_Click" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <TextBlock x:Name="StatusText" Text="" VerticalAlignment="Center"
+                           Foreground="#FF6B6B" Margin="0,0,8,0"
+                           AutomationProperties.AutomationId="StatusText" />
+                <Button x:Name="CancelButton" Content="取消" Style="{StaticResource ButtonStyle}"
+                        AutomationProperties.AutomationId="CancelButton" Click="Cancel_Click" />
+                <Button x:Name="SaveButton" Content="保存并应用" Style="{StaticResource ButtonStyle}"
+                        IsDefault="True" AutomationProperties.AutomationId="SaveButton" Click="Save_Click" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

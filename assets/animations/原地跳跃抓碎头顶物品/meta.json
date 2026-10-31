@@ -1,0 +1,9 @@
+{
+  "name": "原地跳跃抓碎头顶物品",
+  "fps": 12,
+  "frameWidth": 320,
+  "frameHeight": 180,
+  "frameCount": 120,
+  "source": "reference/dsh-pet/dsh-pet/assets/webm/原地跳跃抓碎头顶物品.webm",
+  "generatedAt": "2026-10-30T16:58:22+0800"
+}
